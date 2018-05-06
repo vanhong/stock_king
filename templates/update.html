@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script-->
+{% load static from staticfiles %}
+<script src="{% static "js/jquery-3.3.1.js" %}" ></script>
+<!--script type="text/javascript" src="../static/js/jquery-3.3.1.js"></script-->
+<script>
+  $(document).ready(function(){
+    $(".update_sid").click(function() {
+      $('.sid_notes').html('start update...');
+      $.get('/stocks/update_stockid/').done(function(jData) {
+          $('.sid_dataDate').html(jData.dataDate);
+          $('.sid_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_mr").click(function() {
+      $('.mr_notes').html('start update...');
+      $.post('/stocks/update_month_revenue/', {'date':$('.mr_date').val()}).done(function(jData) {
+          $('.mr_dataDate').html(jData.dataDate);
+          $('.mr_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_sr").click(function() {
+      $('.sr_notes').html('start update...');
+      $.post('/stocks/update_season_revenue/', {'date':$('.sr_date').val()}).done(function(jData) {
+          $('.sr_dataDate').html(jData.dataDate);
+          $('.sr_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_sis").click(function() {
+      $('.sis_notes').html('start update...');
+      $.get('/financial/update_season_income_statement/', {'date':$('.sis_date').val()}).done(function(jData) {
+          $('.sis_dataDate').html(jData.dataDate);
+          $('.sis_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_sbs").click(function() {
+      $('.sbs_notes').html('start update...');
+      $.get('/financial/update_season_balance_sheet/', {'date':$('.sbs_date').val()}).done(function(jData) {
+          $('.sbs_dataDate').html(jData.dataDate);
+          $('.sbs_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_scs").click(function() {
+      $('.scs_notes').html('start update...');
+      $.get('/financial/update_season_cashflow_statement/', {'date':$('.scs_date').val()}).done(function(jData) {
+          $('.scs_dataDate').html(jData.dataDate);
+          $('.scs_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_sfr").click(function() {
+      $('.sfr_notes').html('start update...');
+      $.get('/financial/update_season_financial_ratio/', {'date':$('.sfr_date').val()}).done(function(jData) {
+          $('.sfr_dataDate').html(jData.dataDate);
+          $('.sfr_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_yis").click(function() {
+      $('.yis_notes').html('start update...');
+      $.get('/financial/update_year_income_statement/', {'date':$('.yis_date').val()}).done(function(jData) {
+          $('.yis_dataDate').html(jData.dataDate);
+          $('.yis_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_ycs").click(function() {
+      $('.ycs_notes').html('start update...');
+      $.get('/financial/update_year_cashflow_statement/', {'date':$('.ycs_date').val()}).done(function(jData) {
+          $('.ycs_dataDate').html(jData.dataDate);
+          $('.ycs_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_yfr").click(function() {
+      $('.yfr_notes').html('start update...');
+      $.get('/financial/update_year_financial_ratio/', {'date':$('.yfr_date').val()}).done(function(jData) {
+          $('.yfr_dataDate').html(jData.dataDate);
+          $('.yfr_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_wp").click(function() {
+      $('.wp_notes').html('start update...');
+      $.get('/prices/update_price/', {'date':$('.wp_date').val()}).done(function(jData) {
+          $('.wp_dataDate').html(jData.dataDate);
+          $('.wp_notes').html(jData.notes);
+      });
+    });
+  });
+</script>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<table>
+  <tr>
+    <th>項目</th>
+    <th>最近更新日</th>
+    <th>最新資料日期</th>
+    <th>更新</th>
+    <th>日期設定</th>
+    <th>備註</th>
+  </tr>
+  <tr>
+    <td>標的</td>
+    <td class="sid_updateDate">{{ sid.update_date }}</td>
+    <td class="sid_dataDate">{{ sid.data_date }}</td>
+    <td><button type="submit" class="update_sid">更新</button></td>
+    <td></td>
+    <td class="sid_notes">{{ sid.note }}</td>
+  </tr>
+  <tr>
+    <td>月營收</td>
+    <td class="mr_updateDate">{{ mr.update_date }}</td>
+    <td class="mr_dataDate">{{ mr.data_date }}</td>
+    <td><button type="submit" class="update_mr">更新</button></td>
+    <td><input type="text" class="mr_date" placeholder="Year-Month"></td>
+    <td class="mr_notes">{{ mr.note }}</td>
+  </tr>
+  <tr>
+    <td>季營收</td>
+    <!--<form action="/stocks/update_month_revenue/" method="post">-->
+    <td class="sr_updateDate">{{ sr.update_date }}</td>
+    <td class="sr_dataDate">{{ sr.data_date }}</td>
+    <td><button type="submit" class="update_sr">更新</button></td>
+    <td><input type="text" class="sr_date" placeholder="Year-Month"></td>
+    <td class="sr_notes">{{ sr.note }}</td>
+  </tr>
+  <tr>
+    <td>損益表(季)</td>
+    <td class="sis_updateDate">{{ sis.update_date }}</td>
+    <td class="sis_dataDate">{{ sis.data_date }}</td>
+    <td><button type="submit" class="update_sis">更新</button></td>
+    <td><input type="text" class="sis_date" placeholder="Year-Month"></td>
+    <td class="sis_notes">{{ sis.note }}</td>
+  </tr>
+  <tr>
+    <td>資產負債表</td>
+    <td class="sbs_updateDate">{{ sbs.update_date }}</td>
+    <td class="sbs_dataDate">{{ sbs.data_date }}</td>
+    <td><button type="submit" class="update_sbs">更新</button></td>
+    <td><input type="text" class="sbs_date" placeholder="Year-Month"></td>
+    <td class="sbs_notes">{{ sbs.note }}</td>
+  </tr>
+  <tr>
+    <td>現金流量表(季)</td>
+    <td class="scs_updateDate">{{ scs.update_date }}</td>
+    <td class="scs_dataDate">{{ scs.data_date }}</td>
+    <td><button type="submit" class="update_scs">更新</button></td>
+    <td><input type="text" class="scs_date" placeholder="Year-Month"></td>
+    <td class="scs_notes">{{ scs.note }}</td>
+  </tr>
+  <tr>
+    <td>財務比率季表</td>
+    <td class="sfr_updateDate">{{ sfr.update_date }}</td>
+    <td class="sfr_dataDate">{{ sfr.data_date }}</td>
+    <td><button type="submit" class="update_sfr">更新</button></td>
+    <td><input type="text" class="sfr_date" placeholder="Year-Month"></td>
+    <td class="sfr_notes">{{ sfr.note }}</td>
+  </tr>
+  <tr>
+    <td>損益表(年)</td>
+    <td class="yis_updateDate">{{ yis.update_date }}</td>
+    <td class="yis_dataDate">{{ yis.data_date }}</td>
+    <td><button type="submit" class="update_yis">更新</button></td>
+    <td><input type="text" class="yis_date" placeholder="Year"></td>
+    <td class="yis_notes">{{ yis.note }}</td>
+  </tr>
+  <tr>
+    <td>現金流量表(年)</td>
+    <td class="ycs_updateDate">{{ ycs.update_date }}</td>
+    <td class="ycs_dataDate">{{ ycs.data_date }}</td>
+    <td><button type="submit" class="update_ycs">更新</button></td>
+    <td><input type="text" class="ycs_date" placeholder="Year"></td>
+    <td class="ycs_notes">{{ ycs.note }}</td>
+  </tr>
+  <tr>
+    <td>財務比率年表</td>
+    <td class="yfr_updateDate">{{ yfr.update_date }}</td>
+    <td class="yfr_dataDate">{{ yfr.data_date }}</td>
+    <td><button type="submit" class="update_yfr">更新</button></td>
+    <td><input type="text" class="yfr_date" placeholder="Year"></td>
+    <td class="yfr_notes">{{ yfr.note }}</td>
+  </tr>
+  <tr>
+    <td>股價(週)</td>
+    <td class="wp_updateDate">{{ wp.update_date }}</td>
+    <td class="wp_dataDate">{{ wp.data_date }}</td>
+    <td><button type="submit" class="update_wp">更新</button></td>
+    <td></td>
+    <td class="wp_notes">{{ wp.note }}</td>
+  </tr>
+</table>
+
+</body>
+</html>

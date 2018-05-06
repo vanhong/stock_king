@@ -1,0 +1,12 @@
+<fieldset>
+	<legend>篩選結果</legend>
+	<table>
+		{% for key, value in results %}
+		<tr>
+			<td sytle="width:6em">{{ value.stockid }}</td>
+			<td>{{ value.name }}</td>
+			<td>{{value.company_type}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+</fieldset>
