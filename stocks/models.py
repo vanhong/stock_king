@@ -16,6 +16,7 @@ class MonthRevenue(models.Model):
 	year = models.IntegerField(db_index=True)
 	month = models.IntegerField(db_index=True)
 	date = models.DateField(db_index=True)
+	data_date = models.DateField(db_index=True)
 	symbol = models.CharField(max_length=20, db_index=True)
 	revenue = models.DecimalField(max_digits=20, decimal_places=0, null=True)
 	month_growth_rate = models.DecimalField(
@@ -37,9 +38,42 @@ class SeasonRevenue(models.Model):
 	year = models.IntegerField(db_index=True)
 	season = models.IntegerField(db_index=True)
 	date = models.DateField(db_index=True)
+	data_date = models.DateField(db_index=True)
 	symbol = models.CharField(max_length=20, db_index=True)
 	revenue = models.DecimalField(max_digits=20, decimal_places=0, null=True)
 	season_growth_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 	last_year_revenue = models.DecimalField(max_digits=20, decimal_places=0, null=True)
+	year_growth_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 	acc_revenue = models.DecimalField(max_digits=20, decimal_places=0, null=True)
 	acc_year_growth_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+class Dividend(models.Model):
+	surrogate_key = models.CharField(max_length=20, primary_key=True)
+	date = models.DateField(db_index=True)
+	year = models.IntegerField(db_index=True)
+	symbol = models.CharField(max_length=20, db_index=True)
+	cash_dividends = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+	stock_dividends_from_retained_earnings = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+	stock_dividends_from_capital_reserve = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+	stock_dividends = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+	total_dividends = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+	employee_stock_rate = models.DecimalField(
+		max_digits=20, decimal_places=3, null=True)
+
+class WatchList(models.Model):
+	surrogate_key = models.CharField(max_length=20, primary_key=True)
+	date = models.DateField(db_index=True, null=False)
+	user = models.CharField(max_length=20)
+	symbol = models.CharField(max_length=20)
+	rank = models.IntegerField()
+
+class UpdateManagement(models.Model):
+	name = models.CharField(max_length=50, primary_key=True)
+	last_update_date = models.DateField()
+	last_data_date = models.DateField()
+	notes = models.CharField(max_length=50, null=True)

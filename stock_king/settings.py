@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'stocks',
     'prices',
     'financial',
+    'research',
+    'filter',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +60,7 @@ ROOT_URLCONF = 'stock_king.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates').replace('\\', '/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,7 +86,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
         'USER': 'root',
-        'PASSWORD': '1111',
+        'PASSWORD': '1234',
     }
 }
 
@@ -121,8 +123,16 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+#STATICFILES_DIRS = (
+#    ("js", os.path.join(STATIC_ROOT,'js')),
+#    ("css", os.path.join(STATIC_ROOT,'css')),
+#    ("images", os.path.join(STATIC_ROOT,'images')),
+#)

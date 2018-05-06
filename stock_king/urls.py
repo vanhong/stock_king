@@ -16,9 +16,14 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from stocks.views import update
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^stocks/', include('stocks.urls')),
     url(r'^prices/', include('prices.urls')),
     url(r'^financial/', include('financial.urls')),
+    url(r'^research/', include('research.urls')),
+    url(r'^filter/', include('filter.urls')),
+    url(r'^update/$', update),
 ]

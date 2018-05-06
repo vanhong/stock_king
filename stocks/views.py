@@ -1,11 +1,18 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import datetime
 import urllib.request
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.db.models import Max
 from bs4 import BeautifulSoup
 from decimal import Decimal
-from stocks.models import MonthRevenue, StockId, SeasonRevenue
+from django.views.decorators.csrf import csrf_exempt
+from stocks.models import *
+from core.util import *
+import json
 import pdb
+
 
 def is_decimal(s):
 	try:
@@ -18,6 +25,7 @@ def st_to_decimal(data):
 	return Decimal(data.strip().replace(',', ''))
 
 # Create your views here.
+@csrf_exempt
 def update_stockid(request):
 	market_type = [2, 4]
 	cnt = 0
@@ -53,11 +61,20 @@ def update_stockid(request):
 							stockid.save()
 							cnt += 1
 							print("%s stockid is update" %(symbol))
-	return HttpResponse("There are %d stockIds" %(cnt))
+	lastDate = datetime.date.today()
+	lastDateDataCnt = cnt
+	updateManagement = UpdateManagement(name='sid', last_update_date = lastDate,
+										last_data_date = lastDate, 
+										notes = "There is " + str(lastDateDataCnt) + " stockid in " + lastDate.strftime("%Y-%m-%d"))
+	updateManagement.save()
+	json_obj = json.dumps({'dataDate': lastDate.strftime("%Y-%m-%d"), 'notes': 'update ' + str(cnt) + ' data in ' + lastDate.strftime("%Y-%m-%d")})
 
+	return HttpResponse(json_obj, content_type="application/json")
+
+@csrf_exempt
 def update_month_revenue(request):
-	if 'date' in request.GET:
-		date = request.GET['date']
+	if 'date' in request.POST:
+		date = request.POST['date']
 		try:
 			str_year, str_month = date.split('-')
 			year = int(str_year)
@@ -65,48 +82,59 @@ def update_month_revenue(request):
 		except:
 			return HttpResponse('please input correct date "year-mm"')
 	else:
-		return HttpResponse('please input correct date "year-mm"')
+		return HttpResponse('no input date please input correct date "year-mm"')
 	market = ['sii', 'otc']
 	for mkt in market:
-		url = 'http://mops.twse.com.tw/nas/t21/' + mkt + '/t21sc03_' + str(year-1911) + '_' + str(month) + '_0.html'
-		headers = {'User-Agent': 'Mozilla/5.0'}
-		req = urllib.request.Request(url, None, headers)
-		try:
-			response = urllib.request.urlopen(req)
-			html = response.read()
-			soup = BeautifulSoup(html.decode("cp950", "ignore"), "html.parser")
-			trs = soup.find_all('tr', {'align': 'right'})
-			for tr in trs:
-				tds = tr.find_all('td')
-				if (len(tds) == 11):
-					revenue = MonthRevenue()
-					revenue.surrogate_key = tds[0].string.strip() + "_" + str(year) + str(month).zfill(2)
-					revenue.year = year
-					revenue.month = month
-					revenue.date = datetime.date(year, month, 1)
-					revenue.symbol = tds[0].string.strip()
-					if is_decimal(st_to_decimal(tds[2].string.strip())):
-						revenue.revenue = tds[2].string.strip().replace(',', '')
-					if is_decimal(tds[4].string.strip().replace(',', '')):
-						revenue.last_year_revenue = tds[4].string.strip().replace(',', '')
-					if is_decimal(tds[5].string.strip().replace(',', '')):
-						revenue.month_growth_rate = tds[5].string.strip().replace(',', '')
-					if is_decimal(tds[6].string.strip().replace(',', '')):
-						revenue.year_growth_rate = tds[6].string.strip().replace(',', '')
-					if is_decimal(tds[7].string.strip().replace(',', '')):
-						revenue.acc_revenue = tds[7].string.strip().replace(',', '')
-					if is_decimal(tds[9].string.strip().replace(',', '')):
-						revenue.acc_year_growth_rate = tds[9].string.strip().replace(',', '')
-					revenue.save()
-		except urllib.error.URLError as e:
-			print(mkt + ' not update. Reason:', e.reason)
-	cnt = MonthRevenue.objects.filter(year=year, month=month).count()
-	return HttpResponse("There are %s month revenus on %s" %(cnt, date))
-	#return HttpResponse(soup)
 
+		for i in ['0','1']:
+			url = 'http://mops.twse.com.tw/nas/t21/' + mkt + '/t21sc03_' + str(year-1911) + '_' + str(month) + '_' + i + '.html'
+			headers = {'User-Agent': 'Mozilla/5.0'}
+			req = urllib.request.Request(url, None, headers)
+			try:
+				response = urllib.request.urlopen(req)
+				html = response.read()
+				soup = BeautifulSoup(html.decode("cp950", "ignore"), "html.parser")
+				trs = soup.find_all('tr', {'align': 'right'})
+				for tr in trs:
+					tds = tr.find_all('td')
+					if (len(tds) == 11):
+						revenue = MonthRevenue()
+						revenue.surrogate_key = tds[0].string.strip() + "_" + str(year) + str(month).zfill(2)
+						revenue.year = year
+						revenue.month = month
+						revenue.date = datetime.date(year, month, 1)
+						revenue.data_date = revenue_date_to_data_date(year, month)
+						revenue.symbol = tds[0].string.strip()
+						if is_decimal(st_to_decimal(tds[2].string.strip())):
+							revenue.revenue = tds[2].string.strip().replace(',', '')
+						if is_decimal(tds[4].string.strip().replace(',', '')):
+							revenue.last_year_revenue = tds[4].string.strip().replace(',', '')
+						if is_decimal(tds[5].string.strip().replace(',', '')):
+							revenue.month_growth_rate = tds[5].string.strip().replace(',', '')
+						if is_decimal(tds[6].string.strip().replace(',', '')):
+							revenue.year_growth_rate = tds[6].string.strip().replace(',', '')
+						if is_decimal(tds[7].string.strip().replace(',', '')):
+							revenue.acc_revenue = tds[7].string.strip().replace(',', '')
+						if is_decimal(tds[9].string.strip().replace(',', '')):
+							revenue.acc_year_growth_rate = tds[9].string.strip().replace(',', '')
+						revenue.save()
+			except urllib.error.URLError as e:
+				print(mkt + ' not update. Reason:', e.reason)
+	cnt = MonthRevenue.objects.filter(year=year, month=month).count()
+	lastDate = MonthRevenue.objects.all().aggregate(Max('date'))['date__max']
+	lastDateDataCnt = MonthRevenue.objects.filter(date=lastDate).count()
+	updateManagement = UpdateManagement(name='mr', last_update_date = datetime.date.today(),
+										last_data_date = lastDate, 
+										notes = "There is " + str(lastDateDataCnt) + " month_revenues in " + lastDate.strftime("%Y-%m-%d"))
+	updateManagement.save()
+	json_obj = json.dumps({'dataDate': lastDate.strftime("%Y-%m-%d"), 'notes': 'update ' + str(cnt) + ' data in ' + str(year) + '-' + str(month)})
+
+	return HttpResponse(json_obj, content_type="application/json")
+	#return HttpResponse(soup)
+@csrf_exempt
 def update_season_revenue(request):
-	if 'date' in request.GET:
-		date = request.GET['date']
+	if 'date' in request.POST:
+		date = request.POST['date']
 		try:
 			str_year, str_season = date.split('-')
 			year = int(str_year)
@@ -126,6 +154,7 @@ def update_season_revenue(request):
 	secondMonthRevenue = MonthRevenue.objects.filter(year=year, month=startMonth+1)
 	thirdMonthRevenue = MonthRevenue.objects.filter(year=year, month=startMonth+2)
 	date = datetime.date(year, startMonth, 1)
+	data_date = revenue_date_to_data_date(year, startMonth+2)
 	lastYear, lastSeason = last_season(date)
 	lastSeasonRevenues = SeasonRevenue.objects.filter(year=lastYear, season=lastSeason)
 	symbols = list(set(firstMonthStockIds).intersection(set(secondMonthStockIds)).intersection(set(thirdMonthStockIds)))
@@ -136,6 +165,7 @@ def update_season_revenue(request):
 		revenue.season = season
 		revenue.date = date
 		revenue.symbol = symbol
+		revenue.data_date = data_date
 		try:
 			revenue.revenue = firstMonthRevenue.get(symbol=symbol).revenue +\
 							  secondMonthRevenue.get(symbol=symbol).revenue +\
@@ -155,18 +185,164 @@ def update_season_revenue(request):
 		except:
 			pass
 	cnt = SeasonRevenue.objects.filter(year=year, season=season).count()
-	return HttpResponse("Update %s season revenus on %s" %(cnt, date))
+	lastDate = SeasonRevenue.objects.all().aggregate(Max('date'))['date__max']
+	lastDateDataCnt = SeasonRevenue.objects.filter(date=lastDate).count()
+	updateManagement = UpdateManagement(name='sr', last_update_date = datetime.date.today(),
+										last_data_date = lastDate, 
+										notes = "There is " + str(lastDateDataCnt) + " season_revenues in " + lastDate.strftime("%Y-%m-%d"))
+	updateManagement.save()
+	json_obj = json.dumps({'dataDate': lastDate.strftime("%Y-%m-%d"), 'notes': 'update ' + str(cnt) + ' data in ' + str(year) + '-' + str(season)})
+	return HttpResponse(json_obj, content_type="application/json")
+	#return HttpResponse("Update %s season revenus on %s" %(cnt, date))
 
 def last_season(day):
-    year = day.year
-    month = day.month
-    if month <= 3:
-        season = 4
-        year -= 1
-    elif month >= 4 and month <= 6:
-        season = 1
-    elif month >= 7 and month <= 9:
-        season = 2
-    elif month >= 10:
-        season = 3
-    return year, season
+	year = day.year
+	month = day.month
+	if month <= 3:
+		season = 4
+		year -= 1
+	elif month >= 4 and month <= 6:
+		season = 1
+	elif month >= 7 and month <= 9:
+		season = 2
+	elif month >= 10:
+		season = 3
+	return year, season
+
+def update_dividend(request):
+	if 'year' in request.GET:
+		input_year = int(request.GET['year'])
+	else:
+		input_year = 101
+	stock_ids = StockId.objects.all()
+	for stock_id in stock_ids:
+		dividendInDb = Dividend.objects.filter(symbol=stock_id.symbol, year=int(input_year)+1911)
+		if dividendInDb:
+			continue
+		else:
+			stock_symbol = stock_id.symbol
+			url = "http://jsjustweb.jihsun.com.tw/z/zc/zcc/zcc_" + stock_symbol + ".djhtm"
+			headers = {'User-Agent': 'Mozilla/5.0'}
+			req = urllib.request.Request(url, None, headers)
+			response = urllib.request.urlopen(req)
+			html = response.read()
+			soup = BeautifulSoup(html.decode("cp950", "ignore"), "html.parser")
+			dividend_datas = soup.find_all("td", { "class": "t2" })
+			for dividend_data in dividend_datas:
+				try:
+					year = int(dividend_data.string) + 1911
+					dividend = Dividend()
+					dividend.year = year
+					dividend.date = datetime.date(year, 1, 1)
+					dividend.surrogate_key = stock_symbol + "_" + str(year)
+					dividend.symbol = stock_symbol
+					next = dividend_data.next_sibling.next_sibling
+					dividend.cash_dividends = Decimal(next.string)
+					next = next.next_sibling.next_sibling
+					dividend.stock_dividends_from_retained_earnings = Decimal(next.string)
+					next = next.next_sibling.next_sibling
+					dividend.stock_dividends_from_capital_reserve = Decimal(next.string)
+					next = next.next_sibling.next_sibling
+					dividend.stock_dividends = Decimal(next.string)
+					next = next.next_sibling.next_sibling
+					dividend.total_dividends = Decimal(next.string)
+					next = next.next_sibling.next_sibling
+					dividend.employee_stock_rate = Decimal(next.string)
+					dividend.save()
+				except:
+					pass
+			print ('update ' + stock_symbol + ' dividend')
+
+	return HttpResponse("update dividend")
+
+def update(request):
+	all_data = UpdateManagement.objects.all()
+	sid = {}
+	mr = {}
+	sr = {}
+	sis = {}
+	sbs = {}
+	scs = {}
+	sfr = {}
+	yis = {}
+	ycs	 = {}
+	yfr = {}
+	wp = {}
+	#綜合損益表(季)
+	#資產負債表(季)
+	#現金流量表(季)
+	#財務比率(季)
+	#綜合損益表(年)
+	#現金流量表(年)
+	#財務比率(年)
+	if all_data.filter(name='sid').count() > 0:
+		data = UpdateManagement.objects.get(name='sid')
+		sid['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		sid['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		sid['note'] = data.notes
+	if all_data.filter(name='mr').count() > 0:
+		data = UpdateManagement.objects.get(name='mr')
+		mr['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		mr['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		mr['note'] = data.notes
+	if all_data.filter(name='sr').count() > 0:
+		data = UpdateManagement.objects.get(name='sr')
+		sr['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		sr['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		sr['note'] = data.notes
+	if all_data.filter(name='sis').count() > 0:
+		data = UpdateManagement.objects.get(name='sis')
+		sis['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		sis['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		sis['note'] = data.notes
+	if all_data.filter(name='sbs').count() > 0:
+		data = UpdateManagement.objects.get(name='sbs')
+		sbs['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		sbs['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		sbs['note'] = data.notes
+	if all_data.filter(name='scs').count() > 0:
+		data = UpdateManagement.objects.get(name='scs')
+		scs['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		scs['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		scs['note'] = data.notes
+	if all_data.filter(name='sfr').count() > 0:
+		data = UpdateManagement.objects.get(name='sfr')
+		sfr['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		sfr['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		sfr['note'] = data.notes
+	if all_data.filter(name='yis').count() > 0:
+		data = UpdateManagement.objects.get(name='yis')
+		yis['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		yis['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		yis['note'] = data.notes
+	if all_data.filter(name='ycs').count() > 0:
+		data = UpdateManagement.objects.get(name='ycs')
+		ycs['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		ycs['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		ycs['note'] = data.notes
+	if all_data.filter(name='yfr').count() > 0:
+		data = UpdateManagement.objects.get(name='yfr')
+		yfr['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		yfr['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		yfr['note'] = data.notes
+	if all_data.filter(name='wp').count() > 0:
+		data = UpdateManagement.objects.get(name='wp')
+		wp['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		wp['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		wp['note'] = data.notes
+	return render(request, 'update.html', {
+		'mr': mr,
+		'sr': sr,
+		'sis': sis,
+		'sbs': sbs,
+		'scs': sbs,
+		'sfr': sfr,
+		'yis': yis,
+		'ycs': ycs,
+		'yfr': yfr,
+		'sid': sid,
+		'wp': wp,
+	})
+
+def jquery_test(request):
+	return render(request, 'jquery_test.html')
