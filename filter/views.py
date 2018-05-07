@@ -82,7 +82,6 @@ def start_filter(request):
 			resultObj.stockid = stockid.symbol
 			resultObj.company_type = stockid.company_type
 			results_dic[item] = resultObj
-
 	context = {"results": results_dic}
 	return render_to_response('filter/filter_result.html', 
 		{'results':results_dic.items()})
