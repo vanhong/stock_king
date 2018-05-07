@@ -166,6 +166,7 @@ def query_financial_ratio(cnt, ratio_value, field, time_type, date):
 			#values_list(strSymbol, flat=True)
 	return lists
 
+#自己寫的正確版
 def query_financial_ratio_test(cnt, ratio_value, field, time_type, date):
 	strDate = 'data_date'
 	strSymbol = 'symbol'
