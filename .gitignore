@@ -110,4 +110,4 @@ venv.bak/
 __pycache__/
 local_settings.py
 __pycache__/
-filter/__pycache__/views.cpython-36.pyc
+views.cpython-36.pyc
