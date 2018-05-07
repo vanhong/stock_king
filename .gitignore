@@ -109,4 +109,4 @@ venv.bak/
 *.pyc
 __pycache__/
 local_settings.py
-./filter/__pycache__/
+filter/__pycache__/
