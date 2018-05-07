@@ -143,7 +143,7 @@ def query_revenug_avg_growth_rete(cnt, growth_rate, reveneu_type, date):
 			filter(**kwargs2).values_list(strSymbol, flat=True)
 	return lists
 
-#連續幾季(年)財務比率
+#連續幾季(年)財務比率(有錯誤)
 def query_financial_ratio(cnt, ratio_value, field, time_type, date):
 	strDate = 'data_date'
 	strSymbol = 'symbol'
