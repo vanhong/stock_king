@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-{% load static from staticfiles %}
-<script src="{% static "js/jquery-3.3.1.js" %}" ></script>
-<script>
-  $(document).ready(function(){
+  {% load static from staticfiles %}
+  <script src="{% static "js/jquery-3.3.1.js" %}" ></script>
+  <script>
+    $(document).ready(function(){
     //var valuelist = '';
     
     $("#start_filter").click(function() {
@@ -31,25 +31,25 @@
   });
 </script>
 <style type="text/css">
-  .dateCnt{width:50px;}
-  .percentCnt{width: 50px;}
+.dateCnt{width:50px;}
+.percentCnt{width: 50px;}
 </style>
 </head>
 <body>
-<div class="condition">
-  <!--form action="/filter/start_filter/" method="POST"-->
-  {% csrf_token %}
-  <td><input id="start_filter" type="submit" value="選股王"></td>
-  <fieldset>
-    <legend>Date</legend>
-    <table class="conditionTable">
-      <tr>
-        <td>篩選日期:<input type="text" name="date" id="date" style="width:100px"/></td>
-      </tr>
-    </table>
-  </fieldset>
-  <fieldset>
-    <legend>營收</legend>
+  <div class="condition">
+    <!--form action="/filter/start_filter/" method="POST"-->
+    {% csrf_token %}
+    <td><input id="start_filter" type="submit" value="選股王"></td>
+    <fieldset>
+      <legend>Date</legend>
+      <table class="conditionTable">
+        <tr>
+          <td>篩選日期:<input type="text" name="date" id="date" style="width:100px"/></td>
+        </tr>
+      </table>
+    </fieldset>
+    <fieldset>
+      <legend>營收</legend>
       <table class="conditionTable">
         <tr>
           <td>
@@ -93,85 +93,85 @@
             <input type="search" id="s_revenue_avg_yoy-value"  placeholder="" class="percentCnt"/> (%)
           </td>
         </tr>
-    </table>
-  </fieldset>
+      </table>
+    </fieldset>
   </form>
 
-<fieldset>
-<legend>財務比率 - 季</legend>
-  <table class="conditionTable">
-    <tr>
-      <td>
-        <input type="checkbox" id="con-opm_s" class="con-checkbox" />
-        連續 <input type="search" id="opm_s-cnt" class="dateCnt"/> 季
-        營益率大於 <input type="search" id="opm_s-value" class="dateCnt"/> (%)
-      <td>
-    </tr>
-    <tr>
-      <td>
-        <input type="checkbox" id="con-gpm_s" class="con-checkbox" />
-        連續 <input type="search" id="gpm_s-cnt"  class="dateCnt"/> 季
-        毛益率大於 <input type="search" id="gpm_s-value"  class="dateCnt"/> (%)
-      <td>
-    </tr>
-    <tr>
-      <td>
-        <input type="checkbox" id="con-gpm_s_gtn_pre_avg" class="con-checkbox" />
-      毛利率大於前 <input type="search" id="gpm_s_gtn_pre_avg-cnt"  class="dateCnt"/> 季平均</td>
-    </tr>
-  </table>  
-</fieldset>
-
-<legend>籌碼</legend>
-<fieldset>
-  <table class="conditionTable">
-    <tr>
-      <td>
-        <input type="checkbox" id="con-chip_flow" class="css-checkbox" />
-        <label for="con-chip_flow" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
-      </td>
-      <td>
-        連續 <input type="text" id="chip_flow-cnt" class="dateCnt"/>月
-      <td>
-      <td>
-        大戶比例增加 <input type="text" id="chip_flow-value"  placeholder=""/> %
-      <td>
-    </tr>
-    <tr>
-      <td>
-        <input type="checkbox" id="con-corp_over_buy" class="css-checkbox" />
-        <label for="con-corp_over_buy" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
-      </td>
-      <td>
-        連續 <input type="text" id="corp_over_buy-cnt" class="dateCnt"/>天
-      <td>
-      <td>
-        買超大於 <input type="text" id="corp_over_buy-value"  placeholder=""/> (張)
-      <td>
-    </tr>
-  </table>  
-</fieldset>
-<fieldset>
-  <legend>殖利率</legend>
+  <fieldset>
+    <legend>財務比率 - 季</legend>
     <table class="conditionTable">
-    <tr>
-      <td>
-        <input type="checkbox" id="con-yield_rate" class="css-checkbox" />
-        <label for="con-yield_rate" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
-      </td>
-      <td>
-        連續 <input type="text" id="yield_rate-cnt"  class="dateCnt"/> 年
-      <td>
-      <td>
-        現金殖利率大於 <input type="text" id="yield_rate-value"  placeholder=""/> (%)
-      <td>
-    </tr>
-  </table>
-</fieldset>
+      <tr>
+        <td>
+          <input type="checkbox" id="con-opm_s" class="con-checkbox" />
+          連續 <input type="search" id="opm_s-cnt" class="dateCnt"/> 季
+          營益率大於 <input type="search" id="opm_s-value" class="dateCnt"/> (%)
+          <td>
+          </tr>
+          <tr>
+            <td>
+              <input type="checkbox" id="con-gpm_s" class="con-checkbox" />
+              連續 <input type="search" id="gpm_s-cnt"  class="dateCnt"/> 季
+              毛益率大於 <input type="search" id="gpm_s-value"  class="dateCnt"/> (%)
+              <td>
+              </tr>
+              <tr>
+                <td>
+                  <input type="checkbox" id="con-gpm_s_gtn_pre_avg" class="con-checkbox" />
+                  毛利率大於前 <input type="search" id="gpm_s_gtn_pre_avg-cnt"  class="dateCnt"/> 季平均</td>
+                </tr>
+              </table>  
+            </fieldset>
 
-</div>
-<div id="FilterResult" class="condition"></div>
+            <legend>籌碼</legend>
+            <fieldset>
+              <table class="conditionTable">
+                <tr>
+                  <td>
+                    <input type="checkbox" id="con-chip_flow" class="css-checkbox" />
+                    <label for="con-chip_flow" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
+                  </td>
+                  <td>
+                    連續 <input type="text" id="chip_flow-cnt" class="dateCnt"/>月
+                    <td>
+                      <td>
+                        大戶比例增加 <input type="text" id="chip_flow-value"  placeholder=""/> %
+                        <td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <input type="checkbox" id="con-corp_over_buy" class="css-checkbox" />
+                            <label for="con-corp_over_buy" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
+                          </td>
+                          <td>
+                            連續 <input type="text" id="corp_over_buy-cnt" class="dateCnt"/>天
+                            <td>
+                              <td>
+                                買超大於 <input type="text" id="corp_over_buy-value"  placeholder=""/> (張)
+                                <td>
+                                </tr>
+                              </table>  
+                            </fieldset>
+                            <fieldset>
+                              <legend>殖利率</legend>
+                              <table class="conditionTable">
+                                <tr>
+                                  <td>
+                                    <input type="checkbox" id="con-yield_rate" class="css-checkbox" />
+                                    <label for="con-yield_rate" name="checkbox17_lbl" class="css-label dark-check-cyan"></label>
+                                  </td>
+                                  <td>
+                                    連續 <input type="text" id="yield_rate-cnt"  class="dateCnt"/> 年
+                                    <td>
+                                      <td>
+                                        現金殖利率大於 <input type="text" id="yield_rate-value"  placeholder=""/> (%)
+                                        <td>
+                                        </tr>
+                                      </table>
+                                    </fieldset>
 
-</div>
-</body>
-</html>
+                                  </div>
+                                  <div id="FilterResult" class="condition"></div>
+
+                                </div>
+                              </body>
+                              </html>

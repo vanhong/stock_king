@@ -661,6 +661,7 @@ def update_season_income_statement(request):
 					elif symbolSeason1.income_from_discontinued_operations is not None and symbolSeason2.income_from_discontinued_operations is not None and symbolSeason3.income_from_discontinued_operations is not None:
 						income_statement.income_from_discontinued_operations = st_to_decimal(next_data.string) - symbolSeason1.income_from_discontinued_operations - symbolSeason2.income_from_discontinued_operations - symbolSeason3.income_from_discontinued_operations
 		if income_statement.total_basic_earnings_per_share is not None:
+			income_statement.data_date = financial_date_to_data_date(year, season)
 			income_statement.save()
 			print(symbol + ' data updated')
 		else:
@@ -1117,6 +1118,7 @@ def update_season_balance_sheet(request):
 						pass
 						# pdb.set_trace()
 			if balance_sheet.total_cash_and_cash_equivalents:
+				balance_sheet.data_date = financial_date_to_data_date(year, season)
 				balance_sheet.save()
 			else:
 				print (stock_symbol + ' time sleep')
@@ -1552,6 +1554,7 @@ def update_season_cashflow_statement(request):
 						cashflow.interest_income = st_to_decimal(next_data.string)
 			response.close()
 			if cashflow.profit_loss_from_continuing_operations_before_tax:
+				cashflow.data_date = financial_date_to_data_date(year, season)
 				cashflow.save()
 	cnt = SeasonCashflowStatement.objects.filter(year=year, season=season).count()
 	lastDate = SeasonCashflowStatement.objects.all().aggregate(Max('date'))['date__max']
@@ -2192,6 +2195,7 @@ def update_season_financial_ratio(request):
 					ratio.tax_rate = sis.total_tax_expense / sis.profit_loss_from_continuing_operations_before_tax
 			else:
 				ratio.tax_rate = 0
+		ratio.data_date = financial_date_to_data_date(year, season)
 		ratio.save()
 		# print (ratio.symbol + " season financial ratio saved")
 	cnt = SeasonFinancialRatio.objects.filter(year=year, season=season).count()
