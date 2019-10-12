@@ -8,6 +8,7 @@
     //var valuelist = '';
     
     $("#start_filter").click(function() {
+      $('#Message').html('<b> | Processing...</b>');
       var conditions = {}
       var valuelist = $("input:checkbox[class=con-checkbox]:checked").map(function(){
         return $(this).attr('id');
@@ -19,8 +20,9 @@
         });
       });
       conditions['date'] = $('#date').val();
+      conditions['saveid'] = $("#saveid").prop("checked")
       $('#FilterResult').load('/filter/start_filter/', conditions, function(){
-
+          $('#Message').html('');
       });
       //$.post('/filter/start_filter/', {'date':$('.date').val(), conditions}).done(function(jData) {
 
@@ -33,18 +35,27 @@
 <style type="text/css">
 .dateCnt{width:50px;}
 .percentCnt{width: 50px;}
+table { 
+  border: 1px solid #00; border-collapse: collapse;
+} 
 </style>
 </head>
 <body>
   <div class="condition">
     <!--form action="/filter/start_filter/" method="POST"-->
     {% csrf_token %}
-    <td><input id="start_filter" type="submit" value="選股王"></td>
+    <td>
+      <input id="start_filter" type="submit" value="選股王">
+      <span id="Message"></span>
+    </td>
     <fieldset>
       <legend>Date</legend>
       <table class="conditionTable">
         <tr>
           <td>篩選日期:<input type="text" name="date" id="date" style="width:100px"/></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" name='checkbox' id='saveid' class="con-checkbox" />儲存選股</td>
         </tr>
       </table>
     </fieldset>
@@ -168,10 +179,17 @@
                                         </tr>
                                       </table>
                                     </fieldset>
-
                                   </div>
-                                  <div id="FilterResult" class="condition"></div>
-
+                                  <div id="FilterResult" class="condition">
+                                  <table style="border: 5px; margin:2em; width:60%">
+                                    {% for key, value in results.items %}
+                                    <tr>
+                                      <td style="width:6em">{{value.stockid}}</td>
+                                      <td>{{value.company_type}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                  </table>
+                                  </div>
                                 </div>
                               </body>
                               </html>

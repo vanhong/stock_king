@@ -29,7 +29,7 @@ def financial_date_to_data_date(year, season):
 	if season == 1:
 		return datetime.date(year, 5, 15)
 	elif season == 2:
-		return datetime.date(year, 8, 31)
+		return datetime.date(year, 8, 14)
 	elif season == 3:
 		return datetime.date(year, 11, 14)
 	elif season == 4:
@@ -74,12 +74,12 @@ def date_to_financial_date(year, month, day, financial_type):
 			if day >= 14:
 				return datetime.date(year, 11, 14)
 			else:
-				return datetime.date(year, 8, 31)
+				return datetime.date(year, 8, 14)
 		elif month >=9:
-			return datetime.date(yaer, 8, 31)
+			return datetime.date(year, 8, 14)
 		elif month >=8:
-			if day >= 31:
-				return datetime.date(year, 8, 31)
+			if day >= 14:
+				return datetime.date(year, 8, 14)
 			else:
 				return datetime.date(year, 5, 15)
 		elif month >= 6:

@@ -7,6 +7,7 @@ from django.db.models import Sum, Max
 from bs4 import BeautifulSoup
 from financial.models import *
 from stocks.models import UpdateManagement
+from stocks.models import StockId
 from core.util import *
 import datetime
 import pdb
@@ -14,6 +15,8 @@ from decimal import Decimal
 import time
 import html
 import json
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # Create your views here.
 def season_to_date(year, season):
@@ -51,13 +54,15 @@ def prev_season(year, season):
 		return year, season-1
 
 def get_updated_id(year, season):
-	url = 'http://mops.twse.com.tw/mops/web/t163sb14'
+	url = 'https://mops.twse.com.tw/mops/web/t163sb14'
 	headers = {'User-Agent': 'Mozilla/5.0'}
 	values = {'encodeURIComponent': '1', 'step': '1', 'firstin': '1', 'off': '1', 
 				'TYPEK': 'otc', 'year': str(year-1911), 'season': str(season).zfill(2)} 
+	print('get updated id')
 	url_data = urllib.parse.urlencode(values).encode('utf-8')
 	req = urllib.request.Request(url, url_data, headers)
 	try:
+		#context = ssl._create_unverified_context()
 		response = urllib.request.urlopen(req)
 	except urllib.error.URLError as e:
 		if hasattr(e, "reason"):
@@ -101,9 +106,10 @@ def old_show_season_income_statement(request):
 	return HttpResponse(response.read())
 
 def show_season_income_statement(request):
-	url = 'http://mops.twse.com.tw/mops/web/t163sb04'
+	url = 'http://mops.twse.com.tw/mops/web/ajax_t164sb04'
 	headers = {'User-Agent': 'Mozilla/5.0'}
-	values = {'encodeURIComponent' : '1', 'step':'1', 'firstin':'1', 'off':'1', 'TYPEK':'otc', 'year':'106', 'season':'1'}
+	values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'sii', 'step' : '2',
+				  'year' : 106, 'season' : '01', 'co_id' : '2330', 'firstin' : '1'}
 	url_data = urllib.parse.urlencode(values).encode('utf-8')
 	req = urllib.request.Request(url, url_data, headers)
 	response = urllib.request.urlopen(req)
@@ -251,12 +257,14 @@ def update_season_income_statement(request):
 		update_cnt += 1
 		if SeasonIncomeStatement.objects.filter(symbol=symbol, year=year, season=season):
 			continue
-		url = 'http://mops.twse.com.tw/mops/web/ajax_t164sb04'
+		url = 'https://mops.twse.com.tw/mops/web/ajax_t164sb04'
 		values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'sii', 'step' : '2',
 				  'year' : str(year-1911), 'season' : str(season).zfill(2), 'co_id' : symbol, 'firstin' : '1'}
 		url_data = urllib.parse.urlencode(values).encode('utf-8')
 		req = urllib.request.Request(url, url_data, headers)
 		try:
+			print('start parse '+url)
+			#context = ssl._create_unverified_context()
 			response = urllib.request.urlopen(req)
 			html = response.read()
 			#soup = BeautifulSoup(response, from_encoding='utf-8')
@@ -774,7 +782,7 @@ def update_season_balance_sheet(request):
 		stock_symbol = stock_id
 		if not SeasonBalanceSheet.objects.filter(symbol=stock_symbol, year=year, season=season):
 			print (stock_symbol + ' loaded '+ str(update_cnt) + ' in ' + str(len(stockIDs)))
-			url = 'http://mops.twse.com.tw/mops/web/t164sb03'
+			url = 'https://mops.twse.com.tw/mops/web/t164sb03'
 			# if stock_symbol[:2] == '28' or stock_symbol == '5880' or stock_symbol == '5820' or stock_symbol == '3990' or stock_symbol == '5871':
 			headers = {'User-Agent': 'Mozilla/5.0'}
 			values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'all', 'step' : '2',
@@ -782,6 +790,7 @@ def update_season_balance_sheet(request):
 			url_data = urllib.parse.urlencode(values).encode('utf-8')
 			req = urllib.request.Request(url, url_data, headers)
 			try:
+				#context = ssl._create_unverified_context()
 				response = urllib.request.urlopen(req)
 				html = response.read()
 				soup = BeautifulSoup(html.decode("utf-8", "ignore"), "html.parser")
@@ -1188,13 +1197,14 @@ def update_season_cashflow_statement(request):
 		update_cnt += 1
 		if not SeasonCashflowStatement.objects.filter(symbol=stock_symbol, year=year, season=season):
 			print ('season cashflow:' + stock_symbol + ' loaded '+ str(update_cnt) + ' in ' + str(len(stockIDs)))
-			url = 'http://mops.twse.com.tw/mops/web/t164sb05'
+			url = 'https://mops.twse.com.tw/mops/web/t164sb05'
 			headers = {'User-Agent': 'Mozilla/5.0'}
 			values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'all', 'step' : '2',
 					'year' : str(year-1911), 'season' : str(season).zfill(1), 'co_id' : stock_symbol, 'firstin' : '1'}
 			url_data = urllib.parse.urlencode(values).encode('utf-8')
 			req = urllib.request.Request(url, url_data, headers)
 			try:
+				#context = ssl._create_unverified_context()
 				response = urllib.request.urlopen(req)
 				html = response.read()
 				soup = BeautifulSoup(html.decode("utf-8", "ignore"), "html5lib")
@@ -2228,13 +2238,14 @@ def update_year_income_statement(request):
 		update_cnt = update_cnt + 1
 		stock_symbol = stockID
 		if not (YearIncomeStatement.objects.filter(symbol=stock_symbol, year=year)):
-			url = 'http://mops.twse.com.tw/mops/web/ajax_t164sb04'
+			url = 'https://mops.twse.com.tw/mops/web/ajax_t164sb04'
 			values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'sii', 'step' : '2',
 					'year' : str(year-1911), 'season' : '04', 'co_id' : stock_symbol, 'firstin' : '1'}
 			url_data = urllib.parse.urlencode(values).encode('utf-8')
 			headers = {'User-Agent': 'Mozilla/5.0'}
 			req = urllib.request.Request(url, url_data, headers)
 			try:
+				#context = ssl._create_unverified_context()
 				response = urllib.request.urlopen(req)
 				soup = BeautifulSoup(response,from_encoding="utf-8")
 				season_income_datas = soup.find_all("td", {'style' : 'text-align:left;white-space:nowrap;'})
@@ -2449,6 +2460,7 @@ def update_year_income_statement(request):
 						next_data = data.next_sibling.next_sibling
 						income_statement.income_from_discontinued_operations = st_to_decimal(next_data.string)
 			if income_statement.total_basic_earnings_per_share is not None:
+				income_statement.data_date = financial_date_to_data_date(year, 4)
 				income_statement.save()
 				print (stock_symbol + ' data updated ' + str(update_cnt) + ' in ' + str(len(stockIDs)))
 			else:
@@ -2487,13 +2499,14 @@ def update_year_cashflow_statement(request):
 		stock_symbol = stock_id
 		if not YearCashflowStatement.objects.filter(symbol=stock_symbol, year=year):
 			print (stock_symbol + ' loaded ' + str(update_cnt) + ' in ' + str(len(stockIDs)))
-			url = 'http://mops.twse.com.tw/mops/web/t164sb05'
+			url = 'https://mops.twse.com.tw/mops/web/t164sb05'
 			values = {'encodeURIComponent' : '1', 'id' : '', 'key' : '', 'TYPEK' : 'all', 'step' : '2',
 					'year' : str(year-1911), 'season' : '4', 'co_id' : stock_symbol, 'firstin' : '1'}
 			url_data = urllib.parse.urlencode(values).encode('utf-8')
 			headers = {'User-Agent': 'Mozilla/5.0'}
 			req = urllib.request.Request(url, url_data, headers)
 			try:
+				#context = ssl._create_unverified_context()
 				response = urllib.request.urlopen(req)
 				soup = BeautifulSoup(response,from_encoding="utf-8")
 				cashflos_datas = soup.find_all("td", {'style' : 'text-align:left;white-space:nowrap;'})
@@ -2836,6 +2849,7 @@ def update_year_cashflow_statement(request):
 						cashflow.interest_income = st_to_decimal(next_data.string)
 			response.close()
 			if cashflow.profit_loss_from_continuing_operations_before_tax:
+				cashflow.data_date = financial_date_to_data_date(year, 4)
 				cashflow.save()
 	cnt = YearCashflowStatement.objects.filter(year=year).count()
 	lastDate = YearCashflowStatement.objects.all().aggregate(Max('date'))['date__max']
@@ -3140,6 +3154,7 @@ def update_year_financial_ratio(request):
 					ratio.tax_rate = yis.total_tax_expense / yis.profit_loss_from_continuing_operations_before_tax
 			else:
 				ratio.tax_rate = 0
+		ratio.data_date = financial_date_to_data_date(year, 4)
 		ratio.save()
 		# print (ratio.symbol + " season financial ratio saved")
 	cnt = YearFinancialRatio.objects.filter(year=year).count()

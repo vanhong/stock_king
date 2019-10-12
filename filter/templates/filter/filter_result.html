@@ -3,9 +3,24 @@
 	<table>
 		{% for key, value in results %}
 		<tr>
-			<td sytle="width:6em">{{ value.stockid }}</td>
+			<td width="80px">{{ value.stockid }}</td>
 			<td>{{ value.name }}</td>
-			<td>{{value.company_type}}</td>
+			<td>{{ value.company_type }}</td>
+			<td>{{ value.price }}</td>
+			<td>{{ value.eps }}</td>
+			<td>{{ value.pe }}</td>
+			<td width="140px">{{ value.revenueGrowth}}</td>
+			<td width="140px">{{ value.accRevenueGrowth}}</td>
+			<td>{{value.three_twelve_revenue}}</td>
+			<td>{{value.opm_s}}</td>
+			<td>{{value.npm_s}}</td>
+			<td>{{value.opm_s_yoy}}</td>
+			<td>{{value.eps_s_yoy}}</td>
+			<td>{{value.dividend_con}}</td>
+			<td>{{value.quick_ratio}}</td>
+			<td>{{value.estimate_revenue_yoy}}</td>
+			<td>{{value.three_free_cashflow}}</td>
+			<td>{{value.opm_max_min}}</td>
 		</tr>
 		{% endfor %}
 	</table>

@@ -12,7 +12,8 @@ from stocks.models import *
 from core.util import *
 import json
 import pdb
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def is_decimal(s):
 	try:
@@ -34,8 +35,9 @@ def update_stockid(request):
 		url = 'http://isin.twse.com.tw/isin/C_public.jsp?strMode=' + str(mkt)
 		headers = {'User-Agent': 'Mozilla/5.0'}
 		req = urllib.request.Request(url, None, headers)
+		context = ssl._create_unverified_context()
 		try:
-			response = urllib.request.urlopen(req)
+			response = urllib.request.urlopen(req, context=context)
 		except urllib.error.URLError as e:
 			print(mkt + ' not update. Reason:', e.reason)
 		else:
@@ -54,7 +56,10 @@ def update_stockid(request):
 						symbol = symbol.strip()
 						name = name.strip()
 						listing_date = datetime.datetime.strptime(tds[2].string.strip(), '%Y/%m/%d').date()
-						company_type = tds[4].string.strip()
+						try:
+							company_type = tds[4].string.strip()
+						except:
+							content_type = "nil"
 						stockid = StockId(symbol=symbol, name=name, market_type=market,
 										  company_type=company_type, listing_date=listing_date)
 						if symbol is not None:
@@ -85,13 +90,15 @@ def update_month_revenue(request):
 		return HttpResponse('no input date please input correct date "year-mm"')
 	market = ['sii', 'otc']
 	for mkt in market:
-
+		ssl._create_default_https_context = ssl._create_unverified_context
 		for i in ['0','1']:
-			url = 'http://mops.twse.com.tw/nas/t21/' + mkt + '/t21sc03_' + str(year-1911) + '_' + str(month) + '_' + i + '.html'
+			url = 'https://mops.twse.com.tw/nas/t21/' + mkt + '/t21sc03_' + str(year-1911) + '_' + str(month) + '_' + i + '.html'
 			headers = {'User-Agent': 'Mozilla/5.0'}
-			req = urllib.request.Request(url, None, headers)
+			#req = urllib.request.Request(url, None, headers)
 			try:
-				response = urllib.request.urlopen(req)
+				print('start parse '+url)
+				#context = ssl._create_unverified_context()
+				response = urllib.request.urlopen(url)
 				html = response.read()
 				soup = BeautifulSoup(html.decode("cp950", "ignore"), "html.parser")
 				trs = soup.find_all('tr', {'align': 'right'})
@@ -213,10 +220,10 @@ def update_dividend(request):
 	if 'year' in request.GET:
 		input_year = int(request.GET['year'])
 	else:
-		input_year = 101
+		input_year = 2016
 	stock_ids = StockId.objects.all()
 	for stock_id in stock_ids:
-		dividendInDb = Dividend.objects.filter(symbol=stock_id.symbol, year=int(input_year)+1911)
+		dividendInDb = Dividend.objects.filter(symbol=stock_id.symbol, year=int(input_year))
 		if dividendInDb:
 			continue
 		else:
@@ -227,32 +234,32 @@ def update_dividend(request):
 			response = urllib.request.urlopen(req)
 			html = response.read()
 			soup = BeautifulSoup(html.decode("cp950", "ignore"), "html.parser")
-			dividend_datas = soup.find_all("td", { "class": "t2" })
+			dividend_datas = soup.find_all("td", { "class": ["t3n0", "t3n1"] })
 			for dividend_data in dividend_datas:
-				try:
-					year = int(dividend_data.string) + 1911
-					dividend = Dividend()
-					dividend.year = year
-					dividend.date = datetime.date(year, 1, 1)
-					dividend.surrogate_key = stock_symbol + "_" + str(year)
-					dividend.symbol = stock_symbol
-					next = dividend_data.next_sibling.next_sibling
-					dividend.cash_dividends = Decimal(next.string)
-					next = next.next_sibling.next_sibling
-					dividend.stock_dividends_from_retained_earnings = Decimal(next.string)
-					next = next.next_sibling.next_sibling
-					dividend.stock_dividends_from_capital_reserve = Decimal(next.string)
-					next = next.next_sibling.next_sibling
-					dividend.stock_dividends = Decimal(next.string)
-					next = next.next_sibling.next_sibling
-					dividend.total_dividends = Decimal(next.string)
-					next = next.next_sibling.next_sibling
-					dividend.employee_stock_rate = Decimal(next.string)
-					dividend.save()
-				except:
-					pass
+				if (dividend_data['class'][0] == 't3n0'):
+					try:
+						year = int(dividend_data.string)
+						dividend = Dividend()
+						dividend.year = year
+						dividend.date = datetime.date(year, 1, 1)
+						dividend.surrogate_key = stock_symbol + "_" + str(year)
+						dividend.symbol = stock_symbol
+						next = dividend_data.next_sibling.next_sibling.next_sibling.next_sibling.next_sibling.next_sibling
+						dividend.cash_dividends = Decimal(next.string)
+						next = next.next_sibling.next_sibling
+						dividend.stock_dividends_from_retained_earnings = Decimal(next.string)
+						next = next.next_sibling.next_sibling
+						dividend.stock_dividends_from_capital_reserve = Decimal(next.string)
+						next = next.next_sibling.next_sibling
+						dividend.stock_dividends = Decimal(next.string)
+						next = next.next_sibling.next_sibling
+						dividend.total_dividends = Decimal(next.string)
+						next = next.next_sibling.next_sibling
+						dividend.employee_stock_rate = Decimal(next.string)
+						dividend.save()
+					except:
+						pass
 			print ('update ' + stock_symbol + ' dividend')
-
 	return HttpResponse("update dividend")
 
 def update(request):
@@ -268,6 +275,10 @@ def update(request):
 	ycs	 = {}
 	yfr = {}
 	wp = {}
+	kp = {}
+	waGrowth = {}
+	waValue = {}
+	vkGrowth = {}
 	#綜合損益表(季)
 	#資產負債表(季)
 	#現金流量表(季)
@@ -330,6 +341,26 @@ def update(request):
 		wp['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
 		wp['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
 		wp['note'] = data.notes
+	if all_data.filter(name='kp').count() > 0:
+		data = UpdateManagement.objects.get(name='kp')
+		kp['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		kp['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		kp['note'] = data.notes
+	if all_data.filter(name='waGrowth').count() > 0:
+		data = UpdateManagement.objects.get(name='waGrowth')
+		waGrowth['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		waGrowth['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		waGrowth['note'] = data.notes
+	if all_data.filter(name='waValue').count() > 0:
+		data = UpdateManagement.objects.get(name='waValue')
+		waValue['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		waValue['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		waValue['note'] = data.notes
+	if all_data.filter(name='vkGrowth').count() > 0:
+		data = UpdateManagement.objects.get(name='vkGrowth')
+		vkGrowth['update_date'] = data.last_update_date.strftime("%Y-%m-%d")
+		vkGrowth['data_date'] = data.last_data_date.strftime("%Y-%m-%d")
+		vkGrowth['note'] = data.notes
 	return render(request, 'update.html', {
 		'mr': mr,
 		'sr': sr,
@@ -342,6 +373,10 @@ def update(request):
 		'yfr': yfr,
 		'sid': sid,
 		'wp': wp,
+		'kp': kp,
+		'waGrowth' : waGrowth,
+		'waValue' : waValue,
+		'vkGrowth' : vkGrowth,
 	})
 
 def jquery_test(request):

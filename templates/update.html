@@ -99,9 +99,45 @@
   $(document).ready(function(){
     $(".update_wp").click(function() {
       $('.wp_notes').html('start update...');
-      $.get('/prices/update_price/', {'date':$('.wp_date').val()}).done(function(jData) {
+      $.get('/prices/update_price/').done(function(jData) {
           $('.wp_dataDate').html(jData.dataDate);
           $('.wp_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_kp").click(function() {
+      $('.wkp_notes').html('start update...');
+      $.get('/prices/update_pivotal_state/').done(function(jData) {
+          $('.kp_dataDate').html(jData.dataDate);
+          $('.kp_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_waGrowth").click(function() {
+      $('.waGrowth_notes').html('start update...');
+      $.get('/research/update_wawa_growth_power/', {'date':$('.waGrowth_date').val()}).done(function(jData) {
+          $('.waGrowth_dataDate').html(jData.dataDate);
+          $('.waGrowth_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_vkGrowth").click(function() {
+      $('.vkGrowth_notes').html('start update...');
+      $.get('/research/update_vk_growth_power/', {'date':$('.vkGrowth_date').val()}).done(function(jData) {
+          $('.vkGrowth_dataDate').html(jData.dataDate);
+          $('.vkGrowth_notes').html(jData.notes);
+      });
+    });
+  });
+  $(document).ready(function(){
+    $(".update_waValue").click(function() {
+      $('.waValue_notes').html('start update...');
+      $.get('/research/update_wawa_value_line/', {'date':$('.waValue_date').val()}).done(function(jData) {
+          $('.waValue_dataDate').html(jData.dataDate);
+          $('.waValue_notes').html(jData.notes);
       });
     });
   });
@@ -157,7 +193,7 @@ tr:nth-child(even) {
     <td class="sr_updateDate">{{ sr.update_date }}</td>
     <td class="sr_dataDate">{{ sr.data_date }}</td>
     <td><button type="submit" class="update_sr">更新</button></td>
-    <td><input type="text" class="sr_date" placeholder="Year-Month"></td>
+    <td><input type="text" class="sr_date" placeholder="Year-Season"></td>
     <td class="sr_notes">{{ sr.note }}</td>
   </tr>
   <tr>
@@ -223,6 +259,38 @@ tr:nth-child(even) {
     <td><button type="submit" class="update_wp">更新</button></td>
     <td></td>
     <td class="wp_notes">{{ wp.note }}</td>
+  </tr>
+  <tr>
+    <td>關鍵點(週)</td>
+    <td class="kp_updateDate">{{ kp.update_date }}</td>
+    <td class="kp_dataDate">{{ kp.data_date }}</td>
+    <td><button type="submit" class="update_kp">更新</button></td>
+    <td></td>
+    <td class="kp_notes">{{ kp.note }}</td>
+  </tr>
+  <tr>
+    <td>汪汪成長力</td>
+    <td class="waGrowth_updateDate">{{ waGrowth.update_date }}</td>
+    <td class="waGrowth_dataDate">{{ waGrowth.data_date }}</td>
+    <td><button type="submit" class="update_waGrowth">更新</button></td>
+    <td><input type="text" class="waGrowth_date" placeholder="Year-Season"></td>
+    <td class="waGrowth_notes">{{ waGrowth.note }}</td>
+  </tr>
+  <tr>
+    <td>汪汪價值線</td>
+    <td class="waValue_updateDate">{{ waValue.update_date }}</td>
+    <td class="waValue_dataDate">{{ waValue.data_date }}</td>
+    <td><button type="submit" class="update_waValue">更新</button></td>
+    <td><input type="text" class="waValue_date" placeholder="Year-Season"></td>
+    <td class="waValue_notes">{{ waValue.note }}</td>
+  </tr>
+  <tr>
+    <td>VK成長力</td>
+    <td class="vkGrowth_updateDate">{{ vkGrowth.update_date }}</td>
+    <td class="vkGrowth_dataDate">{{ vkGrowth.data_date }}</td>
+    <td><button type="submit" class="update_vkGrowth">更新</button></td>
+    <td><input type="text" class="vkGrowth_date" placeholder="Year-Season"></td>
+    <td class="vkGrowth_notes">{{ vkGrowth.note }}</td>
   </tr>
 </table>
 
